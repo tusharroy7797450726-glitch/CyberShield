@@ -1,0 +1,48 @@
+name: Build CyberShield APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Generate App Logo & Config
+        run: |
+          pip install pillow buildozer cython==0.29.33
+          python3 -c "
+          from PIL import Image, ImageDraw
+          img = Image.new('RGBA', (512, 512), (10, 18, 35, 255))
+          d = ImageDraw.Draw(img)
+          d.rounded_rectangle([30, 30, 482, 482], radius=100, outline=(0, 230, 255, 255), width=18)
+          d.polygon([(256, 95), (390, 155), (370, 305), (256, 415), (142, 305), (122, 155)], fill=(0, 180, 230, 255), outline=(255, 255, 255, 255))
+          img.save('icon.png')
+          "
+          yes | buildozer init
+          sed -i 's/title = My Application/title = CyberShield/g' buildozer.spec
+          sed -i 's/package.name = myapp/package.name = cybershield/g' buildozer.spec
+          sed -i 's/#icon.filename = %(source.dir)s\/data\/icon.png/icon.filename = %(source.dir)s\/icon.png/g' buildozer.spec
+          sed -i 's/#android.permissions = INTERNET/android.permissions = INTERNET/g' buildozer.spec
+          sed -i 's/#warn_on_root = 1/warn_on_root = 0/g' buildozer.spec
+          sed -i 's/requirements = python3,kivy/requirements = python3==3.10.12,kivy==2.2.1/g' buildozer.spec
+
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        with:
+          command: buildozer -v android debug
+          buildozer_version: stable
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CyberShield-APK
+          path: bin/*.apk
