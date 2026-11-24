@@ -16,17 +16,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Generate App Logo & Config
+      - name: Generate Logo and Spec
         run: |
           pip install pillow buildozer cython==0.29.33
-          python3 -c "
-          from PIL import Image, ImageDraw
-          img = Image.new('RGBA', (512, 512), (10, 18, 35, 255))
-          d = ImageDraw.Draw(img)
-          d.rounded_rectangle([30, 30, 482, 482], radius=100, outline=(0, 230, 255, 255), width=18)
-          d.polygon([(256, 95), (390, 155), (370, 305), (256, 415), (142, 305), (122, 155)], fill=(0, 180, 230, 255), outline=(255, 255, 255, 255))
-          img.save('icon.png')
-          "
+          python3 -c "from PIL import Image, ImageDraw; img = Image.new('RGBA', (512, 512), (10, 18, 35, 255)); d = ImageDraw.Draw(img); d.rounded_rectangle([30, 30, 482, 482], radius=100, outline=(0, 230, 255, 255), width=18); d.polygon([(256, 95), (390, 155), (370, 305), (256, 415), (142, 305), (122, 155)], fill=(0, 180, 230, 255), outline=(255, 255, 255, 255)); img.save('icon.png')"
           yes | buildozer init
           sed -i 's/title = My Application/title = CyberShield/g' buildozer.spec
           sed -i 's/package.name = myapp/package.name = cybershield/g' buildozer.spec
@@ -46,3 +39,4 @@ jobs:
         with:
           name: CyberShield-APK
           path: bin/*.apk
+
